@@ -1,7 +1,21 @@
 -- Oozie 3.1.0 release
 
+OOZIE-37 Documentation related modifications for "log -action" option
+OOZIE-35 add auto-rerun for error codes JA008 and JA009 in action executor
+OOZIE-21 Fixed bug forked subwf not returning status to the parent wf job
+OOZIE-28 update coordinator name to coord job at loadstate of coord-submit to avoid exception of bundle-status-update 
+OOZIE-22 (Apache) Add support PostgreSQL
+OOZIE-10 add user-retry in workflow action
+OOZIE-123 CoordKillXCommand command uniqueness and increase priority
+OOZIE-9 (Apache) Launcher job should be able to run in different queue than job itself
+OOZIE-20 add sql scripts for oozie 3.1.0
+OOZIE-135 support multiple shared lib path in oozie
+OOZIE-18 Option to view Workflow job details from Coordinator job detail popup
+OOZIE-17 Group column for coordinator jobs in Oozie Web Console
 OOZIE-11  Adding Distcp Action.  
 OOZIE-6 Custom filters option and User information column added to Coordinator jobs section of Oozie Web Console
+OOZIE-5 Log retrieval for a Coordinator job with large number or actions 
+OOZIE-7 Ability to view the log information corresponding to particular coordinator actions
 OOZIE-124 Update documentation for job-type in WS API
 OOZIE-81  Add an email action to Oozie
 OOZIE-113 merge changes for OOZIE-101 to ActionEndXCommand 
@@ -18,6 +32,7 @@ OOZIE-98 parametrization of 'name' attribute in workflow/coordinator/bundle
 OOZIE-106 add new queue class to iterate next callable when current callable type has reached max concorrency
 OOZIE-108 Upgrade pom version to 3.1.0.
 OOZIE-133 Fs 'move' action made consistent and able to have existing target dir
+OOZIE-792 oozie-stop.sh is oblivious to 'catalina.sh stop' failing
 
 -- Oozie 3.0.2 release
 

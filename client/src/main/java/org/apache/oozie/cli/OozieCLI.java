@@ -19,6 +19,7 @@ import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PrintStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -94,6 +95,7 @@ public class OozieCLI {
     public static final String RERUN_OPTION = "rerun";
     public static final String INFO_OPTION = "info";
     public static final String LOG_OPTION = "log";
+    public static final String ACTION_OPTION = "action";
     public static final String DEFINITION_OPTION = "definition";
     public static final String CONFIG_CONTENT_OPTION = "configcontent";
 
@@ -105,7 +107,6 @@ public class OozieCLI {
     public static final String STATUS_OPTION = "status";
     public static final String LOCAL_TIME_OPTION = "localtime";
     public static final String QUEUE_DUMP_OPTION = "queuedump";
-    public static final String RERUN_ACTION_OPTION = "action";
     public static final String RERUN_COORD_OPTION = "coordinator";
     public static final String RERUN_DATE_OPTION = "date";
     public static final String RERUN_REFRESH_OPTION = "refresh";
@@ -202,7 +203,8 @@ public class OozieCLI {
         Option definition = new Option(DEFINITION_OPTION, true, "job definition");
         Option config_content = new Option(CONFIG_CONTENT_OPTION, true, "job configuration");
         Option verbose = new Option(VERBOSE_OPTION, false, "verbose mode");
-        Option rerun_action = new Option(RERUN_ACTION_OPTION, true, "coordinator rerun on action ids (requires -rerun)");
+        Option action = new Option(ACTION_OPTION, true,
+                "coordinator rerun on action ids (requires -rerun); coordinator log retrieval on action ids (requires -log)");
         Option rerun_date = new Option(RERUN_DATE_OPTION, true,
                 "coordinator/bundle rerun on action dates (requires -rerun)");
         Option rerun_coord = new Option(RERUN_COORD_OPTION, true, "bundle rerun on coordinator names (requires -rerun)");
@@ -237,7 +239,7 @@ public class OozieCLI {
         jobOptions.addOption(verbose);
         jobOptions.addOption(offset);
         jobOptions.addOption(len);
-        jobOptions.addOption(rerun_action);
+        jobOptions.addOption(action);
         jobOptions.addOption(rerun_date);
         jobOptions.addOption(rerun_coord);
         jobOptions.addOption(rerun_refresh);
@@ -603,8 +605,8 @@ public class OozieCLI {
                     String dateScope = null;
                     boolean refresh = false;
                     boolean noCleanup = false;
-                    if (options.contains(RERUN_ACTION_OPTION)) {
-                        throw new OozieCLIException("Invalid options provided for bundle rerun. " + RERUN_ACTION_OPTION
+                    if (options.contains(ACTION_OPTION)) {
+                        throw new OozieCLIException("Invalid options provided for bundle rerun. " + ACTION_OPTION
                                 + " is not valid for bundle rerun");
                     }
                     if (options.contains(RERUN_DATE_OPTION)) {
@@ -637,21 +639,21 @@ public class OozieCLI {
                     String rerunType = null;
                     boolean refresh = false;
                     boolean noCleanup = false;
-                    if (options.contains(RERUN_DATE_OPTION) && options.contains(RERUN_ACTION_OPTION)) {
+                    if (options.contains(RERUN_DATE_OPTION) && options.contains(ACTION_OPTION)) {
                         throw new OozieCLIException("Invalid options provided for rerun: either" + RERUN_DATE_OPTION
-                                + " or " + RERUN_ACTION_OPTION + " expected. Don't use both at the same time.");
+                                + " or " + ACTION_OPTION + " expected. Don't use both at the same time.");
                     }
                     if (options.contains(RERUN_DATE_OPTION)) {
                         rerunType = RestConstants.JOB_COORD_RERUN_DATE;
                         scope = commandLine.getOptionValue(RERUN_DATE_OPTION);
                     }
-                    else if (options.contains(RERUN_ACTION_OPTION)) {
+                    else if (options.contains(ACTION_OPTION)) {
                         rerunType = RestConstants.JOB_COORD_RERUN_ACTION;
-                        scope = commandLine.getOptionValue(RERUN_ACTION_OPTION);
+                        scope = commandLine.getOptionValue(ACTION_OPTION);
                     }
                     else {
                         throw new OozieCLIException("Invalid options provided for rerun: " + RERUN_DATE_OPTION + " or "
-                                + RERUN_ACTION_OPTION + " expected.");
+                                + ACTION_OPTION + " expected.");
                     }
                     if (options.contains(RERUN_REFRESH_OPTION)) {
                         refresh = true;
@@ -695,7 +697,30 @@ public class OozieCLI {
                 }
             }
             else if (options.contains(LOG_OPTION)) {
-                System.out.println(wc.getJobLog(commandLine.getOptionValue(LOG_OPTION)));
+                PrintStream ps = System.out;
+                if (commandLine.getOptionValue(LOG_OPTION).contains("-C")) {
+                    String logRetrievalScope = null;
+                    String logRetrievalType = null;
+                    if (options.contains(ACTION_OPTION)) {
+                        logRetrievalType = RestConstants.JOB_LOG_ACTION;
+                        logRetrievalScope = commandLine.getOptionValue(ACTION_OPTION);
+                    }
+                    try {
+                        wc.getJobLog(commandLine.getOptionValue(LOG_OPTION), logRetrievalType, logRetrievalScope, ps);
+                    }
+                    finally {
+                        ps.close();
+                    }
+                }
+                else {
+                    if (!options.contains(ACTION_OPTION)) {
+                        wc.getJobLog(commandLine.getOptionValue(LOG_OPTION), null, null, ps);
+                    }
+                    else {
+                        throw new OozieCLIException("Invalid options provided for log retrieval. " + ACTION_OPTION
+                                + " is valid only for coordinator job log retrieval");
+                    }
+                }
             }
             else if (options.contains(DEFINITION_OPTION)) {
                 System.out.println(wc.getJobDefinition(commandLine.getOptionValue(DEFINITION_OPTION)));
@@ -1035,8 +1060,8 @@ public class OozieCLI {
 
                 for (BundleJob job : jobs) {
                     System.out.println(String.format(BUNDLE_JOBS_FORMATTER, maskIfNull(job.getId()), maskIfNull(job
-                            .getAppName()), job.getStatus(), maskDate(job.getKickoffTime(), localtime),
-                            maskDate(job.getCreatedTime(), localtime), maskIfNull(job.getUser()), maskIfNull(job.getGroup())));
+                            .getAppName()), job.getStatus(), maskDate(job.getKickoffTime(), localtime), maskDate(job
+                            .getCreatedTime(), localtime), maskIfNull(job.getUser()), maskIfNull(job.getGroup())));
                     System.out.println(RULER);
                 }
             }

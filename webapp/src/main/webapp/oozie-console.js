@@ -595,9 +595,15 @@ function coordJobDetailsPopup(response, request) {
         }, {
             fieldLabel: 'User',
             editable: false,
-            name: 'status',
+            name: 'user',
             width: 200,
             value: jobDetails["user"]
+	}, {
+            fieldLabel: 'Group',
+            editable: false,
+            name: 'group',
+            width: 200,
+            value: jobDetails["group"]
 	}, {
             fieldLabel: 'Frequency',
             editable: false,
@@ -697,11 +703,17 @@ function coordJobDetailsPopup(response, request) {
         bbar: getPagingBar(jobActionStatus),
         listeners: {
             cellclick: {
-                fn: showCoordActionContextMenu
+                fn: showWorkflowPopup
             }
         }
 
     });
+    function showWorkflowPopup(thisGrid, rowIndex, cellIndex, e) {
+        var jobContextMenu = new Ext.menu.Menu('taskContext');
+        var actionStatus = thisGrid.store.data.items[rowIndex].data;
+        var workflowId = actionStatus["externalId"];
+        jobDetailsGridWindow(workflowId);
+    }
     // alert("Coordinator PopUP 4 inside coordDetailsPopup ");
     function showCoordActionContextMenu(thisGrid, rowIndex, cellIndex, e) {
         var jobContextMenu = new Ext.menu.Menu('taskContext');
@@ -879,7 +891,7 @@ function bundleJobDetailsPopup(response, request) {
     var bundleJobName = jobDetails["bundleJobName"];
     var jobActionStatus = new Ext.data.JsonStore({
         data: jobDetails["bundleCoordJobs"],
-        fields: ['coordJobId', 'coordJobName', 'coordJobPath', 'frequency', 'timeUnit', 'nextMaterializedTime', 'status', 'startTime', 'endTime', 'pauseTime','user']
+        fields: ['coordJobId', 'coordJobName', 'coordJobPath', 'frequency', 'timeUnit', 'nextMaterializedTime', 'status', 'startTime', 'endTime', 'pauseTime','user','group']
     });
 
     var formFieldSet = new Ext.form.FieldSet({
@@ -978,6 +990,11 @@ function bundleJobDetailsPopup(response, request) {
             width: 80,
             sortable: true,
             dataIndex: 'user'
+        }, {
+            header: "Group",
+            width: 80,
+            sortable: true,
+            dataIndex: 'group'
         }, {
             header: "Frequency",
             width: 80,
@@ -1134,7 +1151,7 @@ var coord_jobs_store = new Ext.data.JsonStore({
     totalProperty: 'total',
     autoLoad: true,
     root: 'coordinatorjobs',
-    fields: ['coordJobId', 'coordJobName', 'status', 'user', 'frequency', 'timeUnit', 'startTime', 'nextMaterializedTime'],
+    fields: ['coordJobId', 'coordJobName', 'status', 'user', 'group', 'frequency', 'timeUnit', 'startTime', 'nextMaterializedTime'],
     proxy: new Ext.data.HttpProxy({
         url: getOozieBase() + 'jobs'
     })
@@ -1691,6 +1708,11 @@ function initConsole() {
             width: 80,
             sortable: true,
             dataIndex: 'user'
+        }, {
+            header: "Group",
+            width: 80,
+            sortable: true,
+            dataIndex: 'group'
         }, {
             header: "frequency",
             width: 70,
