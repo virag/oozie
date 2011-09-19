@@ -109,22 +109,18 @@ public class PigActionExecutor extends JavaActionExecutor {
 
 
     @Override
-    protected String[] getProductLibPaths(Context context, Element actionXml, Configuration conf)
+    protected String[] getProductLibPaths(Context context, WorkflowAction action)
             throws ActionExecutorException {
-        Namespace ns = actionXml.getNamespace();
-        Element pigElement = actionXml.getChild("use_version", ns);
-        String pigVersion = getVersion(pigElement);
+        String pigVersion = getVersion(action);
         String prodPaths[] = getPigLibraryPath(context, pigVersion);
         return prodPaths;
     }
 
-    private String getVersion(Element pigElement) {
-        String pigVersion = null;
-        if (pigElement == null) {
+    private String getVersion(WorkflowAction action) {
+        String pigVersion = action.getUserProductVersion();
+        System.out.println("\n Pig version = " +pigVersion);
+        if (pigVersion == null) {
             pigVersion = super.getOozieConf().get(PigActionExecutor.PIG_STABLE, " ");
-        }
-        else {
-            pigVersion = pigElement.getTextTrim();
         }
         return pigVersion;
     }

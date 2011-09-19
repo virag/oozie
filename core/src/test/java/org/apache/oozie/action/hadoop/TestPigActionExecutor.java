@@ -137,31 +137,21 @@ public class TestPigActionExecutor extends ActionExecutorTestCase {
         WorkflowJobBean wf = createBaseWorkflow(protoConf, "pig-action");
         WorkflowActionBean action = (WorkflowActionBean) wf.getActions().get(0);
         action.setType(pe.getType());
+        action.setUserProductVersion(userVersion);
+
         Context context = new Context(wf, action);
-
-        String workflowXml = "<pig>" + "<job-tracker>" + getJobTrackerUri() + "</job-tracker>" + "<name-node>"
-                + getNameNodeUri() + "</name-node>" + "<use_version>" + userVersion + "</use_version>" + "</pig>";
-
-        Element actionXml = XmlUtils.parseXml(workflowXml);
-        Configuration conf = pe.createBaseHadoopConf(context, actionXml);
-        String[] p = pe.getProductLibPaths(context, actionXml, conf);
+        String[] p = pe.getProductLibPaths(context, context.getAction());
         assertTrue(p[0].contains(new Path(pigPath, pigUserPath).getName()));
-
-        workflowXml = "<pig>" + "<job-tracker>" + getJobTrackerUri() + "</job-tracker>" + "<name-node>"
-                + getNameNodeUri() + "</name-node>" + "<use_version>" + unsupportedVersion + "</use_version>"
-                + "</pig>";
-        actionXml = XmlUtils.parseXml(workflowXml);
+        action.setUserProductVersion(unsupportedVersion);
         try {
-            pe.getProductLibPaths(context, actionXml, conf);
+            pe.getProductLibPaths(context, action);
             fail();
         }
         catch (ActionExecutorException aee) {
         }
-
-        workflowXml = "<pig>" + "<job-tracker>" + getJobTrackerUri() + "</job-tracker>" + "<name-node>"
-                + getNameNodeUri() + "</name-node>" + "</pig>";
-        actionXml = XmlUtils.parseXml(workflowXml);
-        p = pe.getProductLibPaths(context, actionXml, conf);
+        action.setUserProductVersion(null);
+        context = new Context(wf, action);
+        p = pe.getProductLibPaths(context, action);
         assertTrue(p[0].contains(new Path(pigPath, pigStablePath).getName()));
 
     }
