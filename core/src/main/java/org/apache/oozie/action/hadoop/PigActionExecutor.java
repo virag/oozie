@@ -109,8 +109,7 @@ public class PigActionExecutor extends JavaActionExecutor {
 
 
     @Override
-    protected String[] getProductLibPaths(Context context, WorkflowAction action)
-            throws ActionExecutorException {
+    protected String[] getProductLibPaths(Context context, WorkflowAction action) throws ActionExecutorException {
         String pigVersion = getVersion(action);
         String prodPaths[] = getPigLibraryPath(context, pigVersion);
         return prodPaths;
@@ -118,8 +117,7 @@ public class PigActionExecutor extends JavaActionExecutor {
 
     private String getVersion(WorkflowAction action) {
         String pigVersion = action.getUserProductVersion();
-        System.out.println("\n Pig version = " +pigVersion);
-        if (pigVersion == null) {
+        if (pigVersion.equals("null")) {
             pigVersion = super.getOozieConf().get(PigActionExecutor.PIG_STABLE, " ");
         }
         return pigVersion;
@@ -141,7 +139,7 @@ public class PigActionExecutor extends JavaActionExecutor {
         try {
             if (!fs.exists(pigLibPath)) {
                 throw new ActionExecutorException(ActionExecutorException.ErrorType.ERROR,
-                        ErrorCode.E0903.getTemplate(), XLog.format("Pig library path doesn't exist: {0}", path));
+                        ErrorCode.E0903.getTemplate(), XLog.format("Pig library path doesn't exist:" + path));
             }
             List<String> pigLibPaths = WorkflowAppService.getLibFiles(fs, pigLibPath);
             paths = pigLibPaths.toArray(new String[pigLibPaths.size()]);

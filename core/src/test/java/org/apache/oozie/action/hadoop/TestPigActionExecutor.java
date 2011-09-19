@@ -148,8 +148,9 @@ public class TestPigActionExecutor extends ActionExecutorTestCase {
             fail();
         }
         catch (ActionExecutorException aee) {
+
         }
-        action.setUserProductVersion(null);
+        action.setUserProductVersion("null");
         context = new Context(wf, action);
         p = pe.getProductLibPaths(context, action);
         assertTrue(p[0].contains(new Path(pigPath, pigStablePath).getName()));
@@ -171,7 +172,6 @@ public class TestPigActionExecutor extends ActionExecutorTestCase {
         os = fs.create(new Path(getAppPath(), jLineJar));
         IOUtils.copyStream(is, os);
 
-
         XConfiguration protoConf = new XConfiguration();
         protoConf.set(WorkflowAppService.HADOOP_USER, getTestUser());
         protoConf.set(WorkflowAppService.HADOOP_UGI, getTestUser() + "," + getTestGroup());
@@ -181,6 +181,7 @@ public class TestPigActionExecutor extends ActionExecutorTestCase {
 
         WorkflowJobBean wf = createBaseWorkflow(protoConf, "pig-action");
         WorkflowActionBean action = (WorkflowActionBean) wf.getActions().get(0);
+        action.setUserProductVersion("null");
         action.setType(ae.getType());
         action.setConf(actionXml);
 
